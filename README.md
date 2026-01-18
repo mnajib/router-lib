@@ -79,7 +79,9 @@ in
 
 ### Apply Your Configuration
 
+```
 sudo nixos-rebuild switch --flake /etc/nixos#my-router
+```
 
 ## API Overview
 
