@@ -4,8 +4,8 @@ Stage-based, zone-oriented router library for NixOS.
 
 ## What is router-lib?
 
-router-lib helps you declaratively define routers in NixOS using zones (network segments),
-stages (deployment phases), and presets (common setups). It translates pure definitions into
+router-lib helps you declaratively define routers in NixOS using **zones** (network segments),
+**stages** (deployment phases), and **presets** (common setups). It translates pure definitions into
 NixOS configurations, making router roles reproducible and modular.
 
 ## About This Project
@@ -17,7 +17,7 @@ I’m building router-lib not just as a tool, but as a way to explore how modula
 - Goal: Create an onboarding‑friendly library that learners (like me!) can use to grasp router concepts quickly.
 - Approach: Start small with zones and stages, then grow into more advanced setups.
 
-I welcome feedback, suggestions, and contributions — they help me learn and improve this project.
+Feedback and contributions are welcome — they help me learn and improve this project.
 
 ## Key Concepts
 
@@ -70,17 +70,19 @@ Place your configs under (for example) /etc/nixos/
 ### Configure in configuration.nix
 
 ```nix
-{ lib, pkgs, routerLib }:
+{ lib, pkgs, ... }:
 
-let mkZone = routerLib.lib.zone.mkZone;
-in
 {
   router = {
     enable = true;
     stage  = "stage-1";
 
     zones = {
-      lan = mkZone { iface="enp3s0"; cidr="192.168.0.0/24"; role="trusted"; };
+      lan = routerLib.lib.zone.mkZone {
+        iface="enp3s0";
+        cidr="192.168.0.0/24";
+        role="trusted";
+      };
     };
 
     dhcp.enable = true;
@@ -99,7 +101,7 @@ sudo nixos-rebuild switch --flake /etc/nixos#my-router
 ### Core Functions
 
 - routerLib.lib.zone.mkZone – Define a zone (interface, CIDR, role).
-- routerLib.lib.stage.mkStage – Define deployment stages.
+- routerLib.lib.stage.mkStage – Define deployment stages (planned/experimental).
 - routerLib.lib.preset.* – Use presets for common router setups.
 
 ### Module Options
@@ -113,7 +115,7 @@ When you import 'router-lib.nixosModules.default', you gain:
 | router.zones           | Define zones via mkZone          |
 | router.dhcp.enable     | Enable DHCP service              |
 | router.firewall.enable | Enable firewall rules per zone   |
-| router.nat.enable      | Enable NAT for outbound traffice |
+| router.nat.enable      | Enable NAT for outbound traffic  |
 
 ### Example: Multi-Zone Router
 
@@ -143,12 +145,21 @@ When you import 'router-lib.nixosModules.default', you gain:
 }
 ```
 
-## Why Use router-lib?
+## Related Projects
 
-- Modular: Define zones and stages separately.
-- Declarative: Pure definitions → reproducible configs.
-- Flexible: Mix presets with custom zones.
-- NixOS-native: Integrates directly with flakes and modules.
+### nixos-router
+
+A framework for writing NixOS router configurations, similar in spirit to simple-nixos-mailserver.
+
+- Features: multiple DHCP servers, network namespaces, dynamic interfaces.
+- Scope: ambitious, aimed at advanced networking setups.
+
+## How router-lib Differs
+
+- Onboarding-friendly: Clear concepts like zones and stages make router roles easy to grasp.
+- Modular: Start small (a single LAN zone) and grow into multi‑zone, multi‑stage setups.
+- Declarative: Pure definitions → reproducible NixOS configs.
+- Teaching-oriented: Annotated examples and presets help learners not just use routers, but understand them.
 
 ## License
 
