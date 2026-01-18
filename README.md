@@ -139,6 +139,27 @@ When you import 'router-lib.nixosModules.default', you gain:
 - Flexible: Mix presets with custom zones.
 - NixOS-native: Integrates directly with flakes and modules.
 
+## Why Another Router Library?
+
+When exploring NixOS as a router, you’ll quickly discover that there are already projects tackling this space:
+
+- nixos-router (github.com in Bing) – a powerful framework that supports multiple DHCP servers, network namespaces, and dynamic interfaces. It’s ambitious and well-suited for complex, production-grade setups.
+- nixos-routers (community configs) – collections of reproducible router configurations. These are practical examples but not reusable libraries.
+
+### So why build router-lib?
+
+Because most existing solutions are either too complex for newcomers or too rigid for learners who want to experiment. router-lib is designed to be:
+
+- Onboarding-friendly – clear concepts like zones and stages make router roles easy to grasp.
+- Modular – you can start small (a single LAN zone) and grow into multi-zone, multi-stage setups.
+- Declarative – pure definitions translate directly into reproducible NixOS configs.
+- Teaching-oriented – annotated examples and presets help learners not just use routers, but understand them.
+
+### In short:
+
+- nixos-router is the power tool for advanced networking.
+- router-lib is the learning scaffold for anyone who wants to make routers modular, reproducible, and loveable.
+
 ## License
 
 MIT License
