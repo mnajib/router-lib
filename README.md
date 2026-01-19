@@ -173,103 +173,105 @@ A framework for writing NixOS router configurations, similar in spirit to simple
   - `router.profile` selects which profile is active
   - Profiles can specify zones, firewall rules, NAT, and services
 
-  ```nix
-  { lib, pkgs, ... }:
+### Example: User Config if Profiles Replace Stages
 
-  {
-    router = {
-      enable = true;
+```nix
+{ lib, pkgs, ... }:
 
-      # Select which profile to activate
-      profile = "dev"; # switch between "dev", "lab", "production", "wan-test"
+{
+router = {
+  enable = true;
 
-      profiles = {
-        dev = {
-          # Situation: Development machine connected to existing home LAN.
-          # Goal: Safely test firewall rules without interfering with home router.
-          # DHCP must be off to avoid conflict with the home router’s DHCP service.
-          zones = {
-            lan = routerLib.lib.zone.mkZone {
-              iface = "enp3s0";
-              cidr  = "192.168.0.0/24";
-              role  = "trusted";
-            };
-          };
-          dhcp.enable     = false; # home router already provides DHCP
-          firewall.enable = true;  # test firewall rules internally
-          nat.enable      = false; # no WAN in dev mode
-        };
+  # Select which profile to activate
+  profile = "dev"; # switch between "dev", "lab", "production", "wan-test"
 
-        lab = {
-          # Situation: Isolated test network (no connection to home LAN).
-          # Goal: Full sandbox to test DHCP, zone isolation, and firewall rules.
-          # Safe to run DHCP since no other DHCP server exists in this isolated setup.
-          zones = {
-            lan = routerLib.lib.zone.mkZone {
-              iface = "enp3s0";
-              cidr  = "192.168.0.0/24";
-              role  = "trusted";
-            };
-            dmz = routerLib.lib.zone.mkZone {
-              iface = "eth1";
-              cidr  = "172.16.0.0/24";
-              role  = "semi-trusted";
-            };
-          };
-          dhcp.enable     = true;  # provide IPs to lab clients
-          firewall.enable = true;  # test firewall rules between LAN and DMZ
-          nat.enable      = false; # no WAN in lab mode
-        };
-
-        production = {
-          # Situation: Full router deployment with WAN connectivity.
-          # Goal: Act as the main router for a network, providing DHCP, NAT, and firewall.
-          # WAN is active, NAT is enabled, and firewall rules cover LAN/DMZ/WAN traffic.
-          zones = {
-            lan = routerLib.lib.zone.mkZone {
-              iface = "enp3s0";
-              cidr  = "192.168.0.0/24";
-              role  = "trusted";
-            };
-            dmz = routerLib.lib.zone.mkZone {
-              iface = "eth1";
-              cidr  = "172.16.0.0/24";
-              role  = "semi-trusted";
-            };
-            wan = routerLib.lib.zone.mkZone {
-              iface = "ppp0";
-              role  = "external";
-            };
-          };
-          dhcp.enable     = true;  # provide IPs internally
-          firewall.enable = true;  # enforce LAN/DMZ/WAN rules
-          nat.enable      = true;  # internet access via WAN
-        };
-
-        wan-test = {
-          # Situation: Test router connected via WAN interface into existing home LAN.
-          # Goal: Evaluate NAT/firewall behavior with real WAN traffic, but avoid DHCP conflict.
-          # WAN interface plugs into home router’s LAN; NAT is enabled so test LAN clients
-          # can reach the home LAN/internet. DHCP must be off since home router already serves it.
-          zones = {
-            lan = routerLib.lib.zone.mkZone {
-              iface = "enp3s0";
-              cidr  = "10.10.0.0/24"; # separate subnet for test LAN
-              role  = "trusted";
-            };
-            wan = routerLib.lib.zone.mkZone {
-              iface = "eth2"; # connected to home router’s LAN
-              role  = "external";
-            };
-          };
-          dhcp.enable     = false; # home router already provides DHCP
-          firewall.enable = true;  # test NAT/firewall rules with WAN traffic
-          nat.enable      = true;  # NAT allows test LAN clients to reach home LAN/internet
+  profiles = {
+    dev = {
+      # Situation: Development machine connected to existing home LAN.
+      # Goal: Safely test firewall rules without interfering with home router.
+      # DHCP must be off to avoid conflict with the home router’s DHCP service.
+      zones = {
+        lan = routerLib.lib.zone.mkZone {
+          iface = "enp3s0";
+          cidr  = "192.168.0.0/24";
+          role  = "trusted";
         };
       };
+      dhcp.enable     = false; # home router already provides DHCP
+      firewall.enable = true;  # test firewall rules internally
+      nat.enable      = false; # no WAN in dev mode
     };
-  }
-  ```
+
+    lab = {
+      # Situation: Isolated test network (no connection to home LAN).
+      # Goal: Full sandbox to test DHCP, zone isolation, and firewall rules.
+      # Safe to run DHCP since no other DHCP server exists in this isolated setup.
+      zones = {
+        lan = routerLib.lib.zone.mkZone {
+          iface = "enp3s0";
+          cidr  = "192.168.0.0/24";
+          role  = "trusted";
+        };
+        dmz = routerLib.lib.zone.mkZone {
+          iface = "eth1";
+          cidr  = "172.16.0.0/24";
+          role  = "semi-trusted";
+        };
+      };
+      dhcp.enable     = true;  # provide IPs to lab clients
+      firewall.enable = true;  # test firewall rules between LAN and DMZ
+      nat.enable      = false; # no WAN in lab mode
+    };
+
+    production = {
+      # Situation: Full router deployment with WAN connectivity.
+      # Goal: Act as the main router for a network, providing DHCP, NAT, and firewall.
+      # WAN is active, NAT is enabled, and firewall rules cover LAN/DMZ/WAN traffic.
+      zones = {
+        lan = routerLib.lib.zone.mkZone {
+          iface = "enp3s0";
+          cidr  = "192.168.0.0/24";
+          role  = "trusted";
+        };
+        dmz = routerLib.lib.zone.mkZone {
+          iface = "eth1";
+          cidr  = "172.16.0.0/24";
+          role  = "semi-trusted";
+        };
+        wan = routerLib.lib.zone.mkZone {
+          iface = "ppp0";
+          role  = "external";
+        };
+      };
+      dhcp.enable     = true;  # provide IPs internally
+      firewall.enable = true;  # enforce LAN/DMZ/WAN rules
+      nat.enable      = true;  # internet access via WAN
+    };
+
+    wan-test = {
+      # Situation: Test router connected via WAN interface into existing home LAN.
+      # Goal: Evaluate NAT/firewall behavior with real WAN traffic, but avoid DHCP conflict.
+      # WAN interface plugs into home router’s LAN; NAT is enabled so test LAN clients
+      # can reach the home LAN/internet. DHCP must be off since home router already serves it.
+      zones = {
+        lan = routerLib.lib.zone.mkZone {
+          iface = "enp3s0";
+          cidr  = "10.10.0.0/24"; # separate subnet for test LAN
+          role  = "trusted";
+        };
+        wan = routerLib.lib.zone.mkZone {
+          iface = "eth2"; # connected to home router’s LAN
+          role  = "external";
+        };
+      };
+      dhcp.enable     = false; # home router already provides DHCP
+      firewall.enable = true;  # test NAT/firewall rules with WAN traffic
+      nat.enable      = true;  # NAT allows test LAN clients to reach home LAN/internet
+    };
+  };
+};
+}
+```
 
 ## License
 
