@@ -26,6 +26,11 @@ Feedback and contributions are welcome — they help me learn and improve this p
 - **Stage**: Deployment phase (stage-1 = internal test, stage-2 = WAN)
 - **Translation**: Pure definitions → NixOS config
 
+## Stages
+
+Router-lib supports two stages: `stage-1` (internal testing) and `stage-2` (full deployment).
+See [docs/stages.md](./docs/stages.md) for a detailed explanation and comparison.
+
 ## Quickstart / Usage
 
 ### Directory Structure
