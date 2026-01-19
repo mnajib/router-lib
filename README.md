@@ -186,7 +186,8 @@ A framework for writing NixOS router configurations, similar in spirit to simple
       profiles = {
         dev = {
           # Situation: Development machine connected to existing home LAN.
-          # DHCP must be off to avoid conflict with the home router.
+          # Goal: Safely test firewall rules without interfering with home router.
+          # DHCP must be off to avoid conflict with the home router’s DHCP service.
           zones = {
             lan = routerLib.lib.zone.mkZone {
               iface = "enp3s0";
@@ -195,13 +196,14 @@ A framework for writing NixOS router configurations, similar in spirit to simple
             };
           };
           dhcp.enable     = false; # home router already provides DHCP
-          firewall.enable = true;  # still test firewall rules internally
+          firewall.enable = true;  # test firewall rules internally
           nat.enable      = false; # no WAN in dev mode
         };
 
         lab = {
           # Situation: Isolated test network (no connection to home LAN).
-          # Safe to run DHCP and test zone isolation.
+          # Goal: Full sandbox to test DHCP, zone isolation, and firewall rules.
+          # Safe to run DHCP since no other DHCP server exists in this isolated setup.
           zones = {
             lan = routerLib.lib.zone.mkZone {
               iface = "enp3s0";
@@ -221,7 +223,8 @@ A framework for writing NixOS router configurations, similar in spirit to simple
 
         production = {
           # Situation: Full router deployment with WAN connectivity.
-          # Provides DHCP internally, NAT for internet access, and firewall rules.
+          # Goal: Act as the main router for a network, providing DHCP, NAT, and firewall.
+          # WAN is active, NAT is enabled, and firewall rules cover LAN/DMZ/WAN traffic.
           zones = {
             lan = routerLib.lib.zone.mkZone {
               iface = "enp3s0";
@@ -244,17 +247,18 @@ A framework for writing NixOS router configurations, similar in spirit to simple
         };
 
         wan-test = {
-          # Situation: Test router connected via WAN interface into existing home network.
-          # NAT is enabled so test clients can reach the home LAN/internet,
-          # but DHCP must be off to avoid conflict with the home router.
+          # Situation: Test router connected via WAN interface into existing home LAN.
+          # Goal: Evaluate NAT/firewall behavior with real WAN traffic, but avoid DHCP conflict.
+          # WAN interface plugs into home router’s LAN; NAT is enabled so test LAN clients
+          # can reach the home LAN/internet. DHCP must be off since home router already serves it.
           zones = {
             lan = routerLib.lib.zone.mkZone {
               iface = "enp3s0";
-              cidr  = "10.10.0.0/24";
+              cidr  = "10.10.0.0/24"; # separate subnet for test LAN
               role  = "trusted";
             };
             wan = routerLib.lib.zone.mkZone {
-              iface = "eth2"; # connected to home router's LAN
+              iface = "eth2"; # connected to home router’s LAN
               role  = "external";
             };
           };
