@@ -161,6 +161,29 @@ A framework for writing NixOS router configurations, similar in spirit to simple
 - Declarative: Pure definitions → reproducible NixOS configs.
 - Teaching-oriented: Annotated examples and presets help learners not just use routers, but understand them.
 
+## TODO / Roadmap
+
+- [ ] Consider replacing fixed `stage` model with user‑customizable **profiles**
+  - Allow users to define arbitrary profiles (e.g. `lab`, `wan-test`, `production`)
+  - `router.profile` selects which profile is active
+  - Profiles can specify zones, firewall rules, NAT, and services
+
+  ```nix
+  router.profiles = {
+    lab = {
+      zones = { lan = …; dmz = …; };
+      dhcp.enable = true;
+      nat.enable  = false;
+    };
+
+    production = {
+      zones = { lan = …; dmz = …; wan = …; };
+      dhcp.enable = true;
+      nat.enable  = true;
+    };
+  };
+  ```
+
 ## License
 
 MIT License
